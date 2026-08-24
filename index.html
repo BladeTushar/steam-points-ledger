@@ -2,315 +2,141 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Steam Points Calculator — Points-per-Purchase Estimator</title>
-<meta name="description" content="Calculate how many Steam Points you earn per purchase in your country's currency, styled after the Steam storefront.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Gaming Rewards Calculator — Universal Purchase Estimator</title>
+<meta name="description" content="Calculate reward points earned per purchase across global currencies using live FX exchange rates.">
+<meta name="theme-color" content="#0d1117">
+
+<!-- PWA Manifest Data URI -->
+<link rel="manifest" href='data:application/manifest+json,{"name":"Gaming Points Calc","short_name":"PointsCalc","start_url":".","display":"standalone","background_color":"#0d1117","theme_color":"#0d1117","icons":[{"src":"data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%2300f2fe%22/></svg>","sizes":"192x192","type":"image/svg+xml"}]}'>
+
 <style>
-  :root{
-    --bg-page:#1b2838;
-    --bg-header:#171a21;
-    --bg-header-2:#1b2838;
-    --bg-panel:#16202d;
-    --bg-panel-2:#1f2f42;
-    --bg-well:#0e1621;
-    --border:#000c14;
-    --border-soft:#2a3f5a;
-    --blue:#66c0f4;
-    --blue-bright:#67c1f5;
-    --blue-deep:#1a44c2;
-    --green:#a4d007;
-    --green-bright:#beee11;
-    --green-dark:#4c6b22;
-    --text:#c6d4df;
-    --text-bright:#ffffff;
-    --text-dim:#8f98a0;
-    --text-faint:#5c6c7a;
-    --strike:#767a7e;
-    --radius:3px;
-  }
-  *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-  @media (prefers-reduced-motion: reduce){
-    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
-  }
-  body{
-    margin:0;
-    background:var(--bg-page);
-    color:var(--text);
-    font-family:'Roboto', Arial, sans-serif;
-    font-size:14px;
-    line-height:1.5;
-    -webkit-font-smoothing:antialiased;
-    position:relative;
-  }
-  .display{font-family:'Roboto Condensed', Arial, sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:0.01em;}
-  a{color:var(--blue); text-decoration:none;}
-  a:hover{color:var(--text-bright);}
-
-  ::selection{background:var(--blue-deep); color:#fff;}
-
-  /* Ambient background animation (starfield/glow-sweep) was removed entirely —
-     even GPU-composited infinite animations keep the compositor thread awake
-     on every frame, which shows up as sluggishness on lower-power machines.
-     A static, subtle gradient gives the same mood at zero ongoing cost. */
-  .backdrop{
-    position:fixed; inset:0; z-index:0; pointer-events:none;
-    background:radial-gradient(1200px 700px at 15% -10%, rgba(102,192,244,0.05), transparent 60%);
+  :root {
+    --bg-page: #0d1117;
+    --bg-card: #161b22;
+    --bg-card-alt: #21262d;
+    --bg-input: #090d11;
+    --border: #30363d;
+    --accent: #00f2fe;
+    --accent-glow: rgba(0, 242, 254, 0.25);
+    --green-reward: #39d353;
+    --text-main: #f0f6fc;
+    --text-muted: #8b949e;
+    --text-faint: #484f58;
+    --radius: 8px;
   }
 
-  .wrap{max-width:1200px; margin:0 auto; padding:0 20px; position:relative; z-index:1;}
-
-  /* ---------------- header ---------------- */
-  header{
-    background:linear-gradient(to bottom, var(--bg-header), var(--bg-header-2));
-    border-bottom:1px solid var(--border);
-    position:relative; z-index:2;
-  }
-  .header-inner{
-    max-width:1200px; margin:0 auto; padding:0 20px;
-    display:flex; align-items:center; gap:28px; height:64px;
-  }
-  .logo{
-    display:flex; align-items:center; gap:9px; flex-shrink:0;
-  }
-  .logo-mark{
-    width:26px; height:26px; border-radius:50%;
-    background:radial-gradient(circle at 35% 30%, #cfeaff, var(--blue) 45%, var(--blue-deep) 100%);
-    box-shadow:0 0 14px rgba(102,192,244,0.5);
-    position:relative;
-  }
-  .logo-mark::after{
-    content:''; position:absolute; inset:-6px; border-radius:50%;
-    background:radial-gradient(circle, rgba(102,192,244,0.45), transparent 70%);
-    opacity:0.6;
-  }
-  .logo-text{font-family:'Roboto Condensed',sans-serif; font-weight:700; font-size:20px; letter-spacing:0.02em; color:var(--text-bright);}
-  .logo-text span{color:var(--blue);}
-  nav.pillnav{display:flex; gap:2px; flex-wrap:wrap;}
-  nav.pillnav a{
-    font-family:'Roboto Condensed',sans-serif; font-size:13px; text-transform:uppercase; letter-spacing:0.03em;
-    color:var(--text-dim); padding:8px 14px; border-radius:2px; transition:all .15s ease; position:relative;
-  }
-  nav.pillnav a.active{color:var(--text-bright);}
-  nav.pillnav a.active::after{
-    content:''; position:absolute; left:14px; right:14px; bottom:3px; height:2px; background:var(--blue);
-    box-shadow:0 0 8px var(--blue);
-  }
-  nav.pillnav a:hover{color:var(--text-bright);}
-  .header-right{margin-left:auto; display:flex; align-items:center; gap:14px;}
-  .fx-chip{
-    font-family:'Roboto Condensed',sans-serif; font-size:11.5px; color:var(--text-faint);
-    display:flex; align-items:center; gap:6px; white-space:nowrap;
-  }
-  .fx-dot{width:6px; height:6px; border-radius:50%; background:var(--text-faint); transition:background .3s;}
-  .fx-dot.live{background:var(--green); box-shadow:0 0 8px var(--green);}
-
-  .breadcrumb{
-    padding:14px 0 0; font-size:12px; color:var(--text-faint);
-  }
-  .breadcrumb a{color:var(--blue);}
-  .breadcrumb .sep{margin:0 6px; color:var(--text-faint);}
-
-  /* ---------------- hero banner ---------------- */
-  .hero-banner{
-    margin-top:16px; border-radius:var(--radius); overflow:hidden;
-    background:
-      linear-gradient(120deg, rgba(102,192,244,0.10), transparent 55%),
-      linear-gradient(200deg, rgba(164,208,7,0.06), transparent 45%),
-      linear-gradient(135deg, #1e3350 0%, #0f1c2e 60%, #0b141f 100%);
-    border:1px solid var(--border-soft);
-    padding:44px 40px 38px;
-    position:relative;
-  }
-  .hero-banner::before{
-    content:''; position:absolute; inset:0; pointer-events:none;
-    background:repeating-linear-gradient(115deg, transparent 0 60px, rgba(255,255,255,0.015) 60px 61px);
-  }
-  .hero-tagline{
-    display:inline-flex; align-items:center; gap:8px; font-family:'Roboto Condensed',sans-serif;
-    font-size:11.5px; letter-spacing:0.14em; text-transform:uppercase; color:var(--green-bright);
-    background:rgba(76,107,34,0.35); border:1px solid var(--green-dark); padding:4px 10px 4px 8px;
-    border-radius:2px; margin-bottom:18px;
-  }
-  .hero-tagline .dot{width:6px; height:6px; border-radius:50%; background:var(--green-bright);}
-  h1{
-    font-family:'Roboto Condensed',sans-serif; font-weight:700; text-transform:none;
-    font-size:clamp(28px, 4vw, 44px); margin:0 0 14px; line-height:1.08; color:var(--text-bright);
-    letter-spacing:0.005em;
-  }
-  h1 .accent{color:var(--blue);}
-  .hero-lede{color:var(--text-dim); max-width:640px; font-size:15px; margin:0; font-weight:300;}
-
-  .tagpills{display:flex; gap:8px; flex-wrap:wrap; margin-top:22px;}
-  .tagpill{
-    font-family:'Roboto Condensed',sans-serif; font-size:11.5px; text-transform:uppercase; letter-spacing:0.04em;
-    color:var(--text-dim); background:rgba(103,193,245,0.08); border:1px solid rgba(103,193,245,0.25);
-    padding:5px 11px; border-radius:2px; transition:all .2s ease; cursor:default;
-  }
-  .tagpill:hover{background:rgba(103,193,245,0.18); color:var(--text-bright); border-color:var(--blue);}
-
-  /* ---------------- store layout ---------------- */
-  .store-layout{
-    display:grid; grid-template-columns:1fr 340px; gap:22px; margin-top:26px; align-items:start;
-  }
-  @media (max-width:920px){ .store-layout{grid-template-columns:1fr;} }
-
-  .panel{
-    background:var(--bg-panel); border:1px solid var(--border-soft); border-radius:var(--radius);
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg-page);
+    color: var(--text-main);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .panel-title{
-    font-family:'Roboto Condensed',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;
-    font-size:13px; color:var(--text-bright); padding:16px 20px; border-bottom:1px solid var(--border);
-    display:flex; align-items:center; justify-content:space-between;
-  }
-  .panel-title .hint{font-family:'Roboto',sans-serif; font-weight:400; font-size:11.5px; text-transform:none; color:var(--text-faint); letter-spacing:0;}
-  .panel-body{padding:22px 20px 24px;}
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
 
-  .field{margin-bottom:20px;}
-  .field:last-child{margin-bottom:0;}
-  .field label{
-    display:block; font-size:11.5px; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-faint);
-    margin-bottom:8px; font-family:'Roboto Condensed',sans-serif;
-  }
-  select{
-    width:100%; background:var(--bg-well); border:1px solid var(--border-soft); color:var(--text);
-    font-family:'Roboto',sans-serif; font-size:14px; padding:11px 14px; border-radius:2px;
-    outline:none; appearance:none; transition:border-color .15s ease, box-shadow .15s ease;
-    background-image:linear-gradient(45deg, transparent 50%, var(--blue) 50%), linear-gradient(135deg, var(--blue) 50%, transparent 50%);
-    background-position: calc(100% - 20px) center, calc(100% - 15px) center;
-    background-size: 5px 5px, 5px 5px;
-    background-repeat:no-repeat;
-  }
-  select:focus{border-color:var(--blue); box-shadow:0 0 0 3px rgba(102,192,244,0.15);}
-
-  .amount-row{
-    display:flex; align-items:stretch; border:1px solid var(--border-soft); background:var(--bg-well);
-    border-radius:2px; overflow:hidden; transition:border-color .15s ease, box-shadow .15s ease;
-  }
-  .amount-row:focus-within{border-color:var(--blue); box-shadow:0 0 0 3px rgba(102,192,244,0.15);}
-  .amount-row .curr-tag{
-    display:flex; align-items:center; padding:0 14px; color:var(--blue); font-size:15px;
-    background:var(--bg-panel-2); border-right:1px solid var(--border-soft); min-width:56px; justify-content:center;
-    font-family:'Roboto Condensed',sans-serif; font-weight:700;
-  }
-  input[type=number]{
-    flex:1; min-width:0; background:transparent; border:none; outline:none; color:var(--text-bright);
-    font-family:'Roboto',sans-serif; font-size:20px; font-weight:500; padding:11px 14px;
+  .backdrop {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(1000px 600px at 50% -20%, var(--accent-glow), transparent 70%);
   }
 
-  .status-line{font-size:11.5px; color:var(--text-faint); margin-top:8px; display:flex; align-items:center; gap:6px;}
-  .status-line .fx-dot{width:6px; height:6px;}
-  .status-line.live{color:#8fc74b;}
-  .status-line.err{color:#d68a5c;}
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px; position: relative; z-index: 1; }
 
-  /* explainer strip */
-  .explainer{
-    display:flex; gap:12px; margin-top:22px; padding:14px 16px; background:rgba(102,192,244,0.05);
-    border:1px solid rgba(102,192,244,0.18); border-radius:2px; font-size:12.5px; color:var(--text-dim);
-    align-items:flex-start;
+  /* Navigation Header */
+  header {
+    background: rgba(22, 27, 34, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 10;
   }
-  .explainer svg{flex-shrink:0; margin-top:1px; color:var(--blue);}
+  .header-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; color: var(--text-main); }
+  .logo-icon {
+    width: 24px; height: 24px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--accent), #4facfe);
+    display: flex; align-items: center; justify-content: center;
+    color: #000; font-weight: 900; font-size: 14px;
+  }
 
-  /* ---------------- sticky purchase summary (cart) ---------------- */
-  .cart-panel{position:sticky; top:16px;}
-  .cart-rows{padding:18px 20px 6px;}
-  .cart-row{
-    display:flex; justify-content:space-between; gap:10px; font-size:12.5px; color:var(--text-dim);
-    padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05);
-  }
-  .cart-row .cr-v{color:var(--text); text-align:right; font-weight:500;}
+  .fx-status { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+  .fx-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-faint); }
+  .fx-dot.live { background: var(--green-reward); box-shadow: 0 0 8px var(--green-reward); }
 
-  .price-block{padding:6px 20px 20px;}
-  .price-block .discount-tag{
-    display:inline-flex; align-items:center; gap:6px; background:var(--green-dark); color:var(--green-bright);
-    font-family:'Roboto Condensed',sans-serif; font-weight:700; font-size:15px; padding:6px 8px;
-    border-radius:2px; margin-bottom:10px; transition:transform .25s cubic-bezier(.34,1.56,.64,1);
+  /* Hero Banner */
+  .hero-banner {
+    margin: 20px 0; padding: 28px 24px; border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-alt) 100%);
+    border: 1px solid var(--border);
   }
-  .price-block .discount-tag.pop{ animation:popIn .38s cubic-bezier(.34,1.56,.64,1); }
-  @keyframes popIn{ 0%{transform:scale(0.7); opacity:0.4;} 60%{transform:scale(1.08);} 100%{transform:scale(1); opacity:1;} }
+  h1 { font-size: clamp(24px, 5vw, 36px); margin: 0 0 10px; font-weight: 800; }
+  h1 span { color: var(--accent); }
+  .hero-lede { color: var(--text-muted); margin: 0; max-width: 650px; font-size: 14px; }
 
-  .price-final-row{display:flex; align-items:baseline; gap:10px;}
-  .price-strike{color:var(--strike); text-decoration:line-through; font-size:13px;}
-  .points-final{
-    font-family:'Roboto Condensed',sans-serif; font-weight:700; color:var(--text-bright);
-    font-size:clamp(32px,4vw,42px); line-height:1; display:flex; align-items:baseline; gap:8px;
+  /* App Layout */
+  .calc-grid {
+    display: grid; grid-template-columns: 1fr 340px; gap: 20px; margin-bottom: 40px;
   }
-  .points-final small{font-size:14px; color:var(--text-dim); font-weight:400; font-family:'Roboto',sans-serif;}
-  .price-sub{font-size:11.5px; color:var(--text-faint); margin-top:8px; line-height:1.5;}
+  @media (max-width: 820px) { .calc-grid { grid-template-columns: 1fr; } }
 
-  .buy-btn{
-    display:block; width:calc(100% - 40px); margin:4px 20px 20px; padding:12px 18px; text-align:center;
-    font-family:'Roboto Condensed',sans-serif; font-weight:700; font-size:14px; letter-spacing:0.03em; text-transform:uppercase;
-    color:#e7ffb0; background:linear-gradient(135deg, #a4d007 0%, #536904 100%);
-    border:none; border-radius:2px; cursor:pointer; position:relative; overflow:hidden;
-    transition:transform .15s ease, box-shadow .2s ease;
+  .panel {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px;
   }
-  .buy-btn::after{
-    content:''; position:absolute; top:0; left:-60%; width:40%; height:100%;
-    background:linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
-    transform:skewX(-20deg);
-  }
-  .buy-btn:hover{transform:translateY(-1px); box-shadow:0 6px 18px rgba(164,208,7,0.28);}
-  .buy-btn:hover::after{ animation:shine .9s ease; }
-  .buy-btn:active{transform:translateY(0);}
-  @keyframes shine{ from{left:-60%;} to{left:140%;} }
 
-  /* ---------------- how it works ---------------- */
-  .how{padding:60px 0 10px;}
-  .section-head{display:flex; align-items:baseline; gap:14px; margin-bottom:6px;}
-  h2{font-family:'Roboto Condensed',sans-serif; font-weight:700; font-size:clamp(20px,2.6vw,26px); margin:0; color:var(--text-bright);}
-  .section-sub{color:var(--text-dim); font-size:13.5px; max-width:600px; margin:8px 0 0; font-weight:300;}
-
-  .how-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:26px;}
-  @media (max-width:760px){ .how-grid{grid-template-columns:1fr;} }
-  .how-card{
-    background:var(--bg-panel); border:1px solid var(--border-soft); padding:20px; border-radius:var(--radius);
-    transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
+  
+  select, input[type=number], input[type=text] {
+    width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main);
+    font-size: 15px; padding: 12px; border-radius: var(--radius); outline: none;
+    transition: border-color 0.2s ease;
   }
-  .how-card:hover{transform:translateY(-3px); border-color:var(--blue); box-shadow:0 10px 24px rgba(0,0,0,0.35);}
-  .how-card .hc-num{
-    font-family:'Roboto Condensed',sans-serif; font-weight:700; color:var(--blue); font-size:22px; margin-bottom:10px;
-    opacity:0.55;
-  }
-  .how-card h3{margin:0 0 8px; font-size:15px; color:var(--text-bright); font-family:'Roboto Condensed',sans-serif; font-weight:700; letter-spacing:0.01em;}
-  .how-card p{margin:0; color:var(--text-dim); font-size:13px; font-weight:300;}
+  select:focus, input:focus { border-color: var(--accent); }
 
-  /* ---------------- table section ---------------- */
-  .table-section{padding:56px 0 70px;}
-  .table-toolbar{display:flex; gap:14px; align-items:center; margin:24px 0 14px; flex-wrap:wrap;}
-  .search-box{
-    flex:1; min-width:220px; display:flex; align-items:center; gap:10px;
-    border:1px solid var(--border-soft); background:var(--bg-well); padding:10px 14px; border-radius:2px;
-    transition:border-color .15s ease;
+  .amount-group { display: flex; }
+  .curr-tag {
+    background: var(--bg-card-alt); border: 1px solid var(--border); border-right: none;
+    padding: 0 14px; display: flex; align-items: center; justify-content: center;
+    border-radius: var(--radius) 0 0 var(--radius); font-weight: 700; color: var(--accent);
   }
-  .search-box:focus-within{border-color:var(--blue);}
-  .search-box svg{flex-shrink:0; color:var(--text-faint);}
-  .search-box input{flex:1; background:transparent; border:none; outline:none; color:var(--text); font-size:13.5px;}
-  .table-count{font-size:11.5px; color:var(--text-faint); white-space:nowrap; font-family:'Roboto Condensed',sans-serif;}
+  .amount-group input { border-radius: 0 var(--radius) var(--radius) 0; font-size: 18px; font-weight: 600; }
 
-  .table-scroll{border:1px solid var(--border-soft); border-radius:var(--radius); overflow:hidden; background:var(--bg-panel);}
-  table{width:100%; border-collapse:collapse; font-size:13px;}
-  thead th{
-    text-align:left; font-family:'Roboto Condensed',sans-serif; font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
-    color:var(--text-faint); padding:12px 16px; border-bottom:1px solid var(--border-soft); background:var(--bg-panel-2);
-    position:sticky; top:0;
+  /* Summary Card */
+  .summary-card { position: sticky; top: 80px; }
+  .points-display {
+    text-align: center; padding: 20px 0; border-bottom: 1px solid var(--border); margin-bottom: 16px;
   }
-  thead th.num, tbody td.num{text-align:right;}
-  tbody td{padding:10px 16px; border-bottom:1px solid rgba(255,255,255,0.04); color:var(--text-dim);}
-  tbody tr{transition:background .12s ease;}
-  tbody tr:hover{background:rgba(102,192,244,0.06);}
-  tbody td.country{color:var(--text-bright); font-weight:500;}
-  tbody td.curr{color:var(--blue); font-size:12.5px; font-family:'Roboto Condensed',sans-serif;}
-  tbody td.pts{color:var(--green-bright); font-weight:500;}
-  .table-wrap-scroll{max-height:520px; overflow-y:auto;}
-  .fallback-tag{font-size:9.5px; color:var(--text-faint); border:1px solid var(--border-soft); padding:1px 5px; border-radius:2px; margin-left:6px; text-transform:uppercase;}
+  .points-val { font-size: 42px; font-weight: 800; color: var(--green-reward); line-height: 1; }
+  .points-label { font-size: 12px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; margin-top: 6px; }
 
-  footer{border-top:1px solid var(--border-soft); padding:28px 0 50px; color:var(--text-faint); font-size:12px; position:relative; z-index:1;}
-  footer a{color:var(--text-dim);}
+  .summary-row { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; color: var(--text-muted); }
+  .summary-row span:last-child { color: var(--text-main); font-weight: 500; }
+
+  /* Table View */
+  .table-section { margin-bottom: 60px; }
+  .table-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; }
+  .search-box { flex: 1; max-width: 320px; }
+  
+  .table-wrap { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; max-height: 440px; overflow-y: auto; }
+  table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+  th { background: var(--bg-card-alt); padding: 12px 16px; font-size: 12px; text-transform: uppercase; color: var(--text-muted); position: sticky; top: 0; }
+  td { padding: 10px 16px; border-bottom: 1px solid var(--border); color: var(--text-muted); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  td.c-name { color: var(--text-main); font-weight: 500; }
+  td.c-pts { color: var(--green-reward); font-weight: 600; text-align: right; }
+  th.num { text-align: right; }
+
+  footer { border-top: 1px solid var(--border); padding: 24px 0; font-size: 12px; color: var(--text-faint); text-align: center; }
 </style>
 </head>
 <body>
@@ -318,339 +144,187 @@
 <div class="backdrop"></div>
 
 <header>
-  <div class="header-inner">
+  <div class="wrap header-inner">
     <div class="logo">
-      <span class="logo-mark"></span>
-      <span class="logo-text">POINTS<span>CALC</span></span>
+      <div class="logo-icon">P</div>
+      <span>Rewards Estimator</span>
     </div>
-    <nav class="pillnav">
-      <a href="#" class="active">Calculator</a>
-      <a href="#table-section">All Countries</a>
-      <a href="#how">How It Works</a>
-    </nav>
-    <div class="header-right">
-      <div class="fx-chip"><span class="fx-dot" id="fx-dot"></span><span id="rate-updated">loading fx…</span></div>
+    <div class="fx-status">
+      <span class="fx-dot" id="fx-dot"></span>
+      <span id="rate-updated">Updating rates...</span>
     </div>
   </div>
 </header>
 
 <div class="wrap">
-  <div class="breadcrumb">
-    <a href="#">Points Shop</a><span class="sep">›</span><a href="#">Tools</a><span class="sep">›</span>Purchase Calculator
-  </div>
-
   <section class="hero-banner">
-    <div class="hero-tagline"><span class="dot"></span>Live exchange-rate powered</div>
-    <h1>How many <span class="accent">Steam Points</span> does your money earn?</h1>
-    <p class="hero-lede">Every purchase converts to USD first, then earns a flat 100 Points per $1.00 — so the rate in your local currency shifts with the market. Pick a country and see the math, updated with today's rates.</p>
-    <div class="tagpills">
-      <span class="tagpill">Currency Converter</span>
-      <span class="tagpill">150+ Countries</span>
-      <span class="tagpill">Live FX Rates</span>
-      <span class="tagpill">Unofficial Fan Tool</span>
-    </div>
+    <h1>Calculate Purchase <span>Reward Points</span></h1>
+    <p class="hero-lede">Estimate digital storefront reward allocations based on daily live currency exchange calculations (100 base points per standard $1.00 USD value equivalent).</p>
   </section>
 
-  <div class="store-layout">
+  <div class="calc-grid">
     <div class="panel">
-      <div class="panel-title">Purchase Details <span class="hint">Step 1 of 1</span></div>
-      <div class="panel-body">
-        <div class="field">
-          <label for="country-select">Country / billing region</label>
-          <select id="country-select"></select>
-        </div>
-        <div class="field">
-          <label for="amount-input">Amount you're spending</label>
-          <div class="amount-row">
-            <span class="curr-tag" id="curr-tag">₹</span>
-            <input type="number" id="amount-input" value="1000" min="0" step="any" inputmode="decimal">
-          </div>
-          <div class="status-line" id="status-line"><span class="fx-dot"></span><span id="status-text">fetching live exchange rates…</span></div>
-        </div>
+      <div class="field">
+        <label for="country-select">Billing Region / Country</label>
+        <select id="country-select"></select>
+      </div>
 
-        <div class="explainer">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-          <span>Steam credits points on games, DLC, and Valve-processed in-game purchases only — not wallet top-ups or Community Market trades.</span>
+      <div class="field">
+        <label for="amount-input">Purchase Amount Spent</label>
+        <div class="amount-group">
+          <span class="curr-tag" id="curr-tag">$</span>
+          <input type="number" id="amount-input" value="1000" min="0" step="any" inputmode="decimal">
         </div>
       </div>
     </div>
 
-    <div class="panel cart-panel">
-      <div class="panel-title">Points Summary</div>
-      <div class="cart-rows" id="ledger-rows"></div>
-      <div class="price-block">
-        <div class="discount-tag" id="discount-tag">×100 / USD</div>
-        <div class="price-final-row">
-          <div class="points-final"><span id="points-out">—</span><small>points</small></div>
-        </div>
-        <div class="price-sub" id="ledger-foot"></div>
+    <div class="panel summary-card">
+      <div class="points-display">
+        <div class="points-val" id="points-out">—</div>
+        <div class="points-label">Estimated Points Earned</div>
       </div>
-      <button class="buy-btn" id="recalc-btn" type="button">Recalculate</button>
+      <div id="summary-rows"></div>
     </div>
   </div>
 
-  <section class="how" id="how">
-    <div class="section-head"><h2>The formula behind every number</h2></div>
-    <p class="section-sub">There's no separate "points rate" published per country — it falls out of one fixed rule applied through currency conversion.</p>
-    <div class="how-grid">
-      <div class="how-card">
-        <div class="hc-num">01</div>
-        <h3>Convert to USD</h3>
-        <p>Whatever you spend — rupees, euros, won — is converted to its US dollar value using Valve's own currency conversion, refreshed periodically against market rates.</p>
-      </div>
-      <div class="how-card">
-        <div class="hc-num">02</div>
-        <h3>Apply the fixed rate</h3>
-        <p>Every qualifying purchase earns a flat <strong style="color:var(--text-bright)">100 Points per $1.00</strong> of that USD value. Wallet top-ups and Market trades earn nothing.</p>
-      </div>
-      <div class="how-card">
-        <div class="hc-num">03</div>
-        <h3>Rate drifts with FX</h3>
-        <p>Because step 1 uses a currency rate, points per 100 rupees, pesos, or lira move as currencies move — this page recalculates live rather than hardcoding stale figures.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="table-section" id="table-section">
-    <div class="section-head"><h2>Every country, current rate</h2></div>
-    <p class="section-sub">Points earned per <strong style="color:var(--text)">100 units</strong> of each country's Steam-billing currency, computed from today's exchange rate.</p>
-    <div class="table-toolbar">
+  <section class="table-section">
+    <div class="table-controls">
       <div class="search-box">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input type="text" id="table-search" placeholder="Search a country or currency…">
+        <input type="text" id="table-search" placeholder="Search country or currency...">
       </div>
-      <span class="table-count" id="table-count"></span>
+      <span id="table-count" style="font-size: 12px; color: var(--text-muted);"></span>
     </div>
-    <div class="table-scroll">
-      <div class="table-wrap-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Country</th>
-              <th>Billed in</th>
-              <th class="num">Points / 100 units</th>
-              <th class="num">Points / 1 unit</th>
-            </tr>
-          </thead>
-          <tbody id="table-body"></tbody>
-        </table>
-      </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Country</th>
+            <th>Billing Currency</th>
+            <th class="num">Points / 100 Units</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
     </div>
   </section>
 </div>
 
 <footer>
   <div class="wrap">
-    Points math follows Valve's published rule: purchases convert to USD, then earn 100 Points per $1.00 (<a href="https://store.steampowered.com/points/howitworks" target="_blank" rel="noopener">store.steampowered.com/points/howitworks</a>). Exchange rates from a public FX feed, refreshed daily — treat figures as close estimates, not Valve's exact internal conversion. Steam and the Steam logo are trademarks of Valve Corporation; this is an unofficial, fan-made tool with no affiliation to Valve.
+    Independent conversion estimator tool. Rates calculated dynamically via public FX APIs for baseline estimation purposes. Not affiliated with, endorsed by, or connected to any specific third-party digital store or game platform publisher.
   </div>
 </footer>
 
 <script>
-/* ---------------- Steam-native billing currencies ---------------- */
-const STEAM_CURRENCIES = new Set(["AED","AUD","BRL","CAD","CHF","CLP","CNY","COP","CRC","EUR","GBP","HKD","ILS","IDR","INR","JPY","KRW","KWD","KZT","MXN","MYR","NOK","NZD","PEN","PHP","PLN","QAR","RUB","SAR","SGD","THB","TWD","UAH","USD","UYU","VND","ZAR"]);
-
-const CURRENCY_SYMBOLS = {USD:"$",EUR:"€",GBP:"£",INR:"₹",JPY:"¥",CNY:"¥",KRW:"₩",AUD:"A$",CAD:"C$",CHF:"CHF",BRL:"R$",MXN:"MX$",RUB:"₽",TRY:"₺",AED:"AED",SAR:"SAR",QAR:"QAR",KWD:"KWD",ZAR:"R",SGD:"S$",HKD:"HK$",NOK:"kr",SEK:"kr",DKK:"kr",PLN:"zł",THB:"฿",IDR:"Rp",MYR:"RM",PHP:"₱",VND:"₫",TWD:"NT$",NZD:"NZ$",ILS:"₪",UAH:"₴",CLP:"CLP$",COP:"COP$",PEN:"S/",UYU:"$U",CRC:"₡",KZT:"₸",EGP:"E£",PKR:"₨",BDT:"৳",NGN:"₦",ARS:"AR$",VES:"Bs",XOF:"CFA",XAF:"FCFA"};
-
-/* ---------------- Countries -> real-world currency ---------------- */
-const EUROPE = new Set(["Albania","Andorra","Austria","Belgium","Bosnia and Herzegovina","Bulgaria","Croatia","Cyprus","Czechia","Estonia","Finland","France","Germany","Greece","Hungary","Iceland","Ireland","Italy","Kosovo","Latvia","Liechtenstein","Lithuania","Luxembourg","Malta","Moldova","Monaco","Montenegro","Netherlands","North Macedonia","Portugal","Romania","San Marino","Serbia","Slovakia","Slovenia","Spain","Sweden","Vatican City"]);
-
-const COUNTRIES = [
-["Afghanistan","AFN"],["Albania","ALL"],["Algeria","DZD"],["Andorra","EUR"],["Angola","AOA"],
-["Argentina","ARS"],["Armenia","AMD"],["Australia","AUD"],["Austria","EUR"],["Azerbaijan","AZN"],
-["Bahamas","BSD"],["Bahrain","BHD"],["Bangladesh","BDT"],["Belarus","BYN"],["Belgium","EUR"],
-["Belize","BZD"],["Benin","XOF"],["Bhutan","BTN"],["Bolivia","BOB"],["Bosnia and Herzegovina","BAM"],
-["Botswana","BWP"],["Brazil","BRL"],["Brunei","BND"],["Bulgaria","BGN"],["Burkina Faso","XOF"],
-["Burundi","BIF"],["Cambodia","KHR"],["Cameroon","XAF"],["Canada","CAD"],["Chad","XAF"],
-["Chile","CLP"],["China","CNY"],["Colombia","COP"],["Costa Rica","CRC"],["Croatia","EUR"],
-["Cyprus","EUR"],["Czechia","CZK"],["Denmark","DKK"],["Djibouti","DJF"],["Dominican Republic","DOP"],
-["Ecuador","USD"],["Egypt","EGP"],["El Salvador","USD"],["Estonia","EUR"],["Ethiopia","ETB"],
-["Fiji","FJD"],["Finland","EUR"],["France","EUR"],["Gabon","XAF"],["Georgia","GEL"],
-["Germany","EUR"],["Ghana","GHS"],["Greece","EUR"],["Guatemala","GTQ"],["Guyana","GYD"],
-["Honduras","HNL"],["Hong Kong","HKD"],["Hungary","HUF"],["Iceland","ISK"],["India","INR"],
-["Indonesia","IDR"],["Iraq","IQD"],["Ireland","EUR"],["Israel","ILS"],["Italy","EUR"],
-["Jamaica","JMD"],["Japan","JPY"],["Jordan","JOD"],["Kazakhstan","KZT"],["Kenya","KES"],
-["Kosovo","EUR"],["Kuwait","KWD"],["Kyrgyzstan","KGS"],["Laos","LAK"],["Latvia","EUR"],
-["Lebanon","LBP"],["Libya","LYD"],["Liechtenstein","CHF"],["Lithuania","EUR"],["Luxembourg","EUR"],
-["Malaysia","MYR"],["Maldives","MVR"],["Malta","EUR"],["Mauritius","MUR"],["Mexico","MXN"],
-["Moldova","MDL"],["Monaco","EUR"],["Mongolia","MNT"],["Montenegro","EUR"],["Morocco","MAD"],
-["Mozambique","MZN"],["Myanmar","MMK"],["Namibia","NAD"],["Nepal","NPR"],["Netherlands","EUR"],
-["New Zealand","NZD"],["Nicaragua","NIO"],["Niger","XOF"],["Nigeria","NGN"],["North Macedonia","MKD"],
-["Norway","NOK"],["Oman","OMR"],["Pakistan","PKR"],["Palestine","USD"],["Panama","USD"],
-["Papua New Guinea","PGK"],["Paraguay","PYG"],["Peru","PEN"],["Philippines","PHP"],["Poland","PLN"],
-["Portugal","EUR"],["Qatar","QAR"],["Romania","RON"],["Russia","RUB"],["Rwanda","RWF"],
-["Saudi Arabia","SAR"],["Senegal","XOF"],["Serbia","RSD"],["Singapore","SGD"],["Slovakia","EUR"],
-["Slovenia","EUR"],["South Africa","ZAR"],["South Korea","KRW"],["Spain","EUR"],["Sri Lanka","LKR"],
-["Sudan","SDG"],["Suriname","SRD"],["Sweden","SEK"],["Switzerland","CHF"],["Taiwan","TWD"],
-["Tajikistan","TJS"],["Tanzania","TZS"],["Thailand","THB"],["Togo","XOF"],["Trinidad and Tobago","TTD"],
-["Tunisia","TND"],["Turkey","TRY"],["Turkmenistan","TMT"],["Uganda","UGX"],["Ukraine","UAH"],
-["United Arab Emirates","AED"],["United Kingdom","GBP"],["United States","USD"],["Uruguay","UYU"],
-["Uzbekistan","UZS"],["Venezuela","VES"],["Vietnam","VND"],["Yemen","YER"],["Zambia","ZMW"],
-["Zimbabwe","USD"]
-];
-
-function steamCurrencyFor(name, localCurrency){
-  if (STEAM_CURRENCIES.has(localCurrency)) return localCurrency;
-  if (EUROPE.has(name)) return "EUR";
-  return "USD";
+// PWA Service Worker Registration
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    self.addEventListener('install', e => e.waitUntil(caches.open('pwa-cache').then(c => c.addAll(['./']))));
+    self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+  `;
+  const blob = new Blob([swCode], { type: 'text/javascript' });
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
 }
 
-const DATA = COUNTRIES.map(([name, local]) => {
-  const billed = steamCurrencyFor(name, local);
-  return { name, local, billed, fallback: billed !== local };
-}).sort((a,b) => a.name.localeCompare(b.name));
+const BASE_CURRENCIES = new Set(["AED","AUD","BRL","CAD","CHF","CLP","CNY","COP","CRC","EUR","GBP","HKD","ILS","IDR","INR","JPY","KRW","KWD","KZT","MXN","MYR","NOK","NZD","PEN","PHP","PLN","QAR","RUB","SAR","SGD","THB","TWD","UAH","USD","UYU","VND","ZAR"]);
+const CURRENCY_SYMBOLS = {USD:"$",EUR:"€",GBP:"£",INR:"₹",JPY:"¥",CNY:"¥",KRW:"₩",AUD:"A$",CAD:"C$",CHF:"CHF",BRL:"R$",MXN:"MX$",RUB:"₽",TRY:"₺",AED:"AED",SAR:"SAR",SGD:"S$",HKD:"HK$"};
 
-/* ---------------- state ---------------- */
+const COUNTRIES = [
+  ["Argentina","ARS"],["Australia","AUD"],["Austria","EUR"],["Belgium","EUR"],["Brazil","BRL"],
+  ["Canada","CAD"],["Chile","CLP"],["China","CNY"],["Colombia","COP"],["Czechia","CZK"],
+  ["Denmark","DKK"],["Egypt","EGP"],["Finland","EUR"],["France","EUR"],["Germany","EUR"],
+  ["Hong Kong","HKD"],["Hungary","HUF"],["India","INR"],["Indonesia","IDR"],["Ireland","EUR"],
+  ["Israel","ILS"],["Italy","EUR"],["Japan","JPY"],["Kazakhstan","KZT"],["Malaysia","MYR"],
+  ["Mexico","MXN"],["Netherlands","EUR"],["New Zealand","NZD"],["Norway","NOK"],["Pakistan","PKR"],
+  ["Philippines","PHP"],["Poland","PLN"],["Portugal","EUR"],["Qatar","QAR"],["Saudi Arabia","SAR"],
+  ["Singapore","SGD"],["South Africa","ZAR"],["South Korea","KRW"],["Spain","EUR"],["Sweden","SEK"],
+  ["Switzerland","CHF"],["Taiwan","TWD"],["Thailand","THB"],["Turkey","TRY"],["Ukraine","UAH"],
+  ["United Arab Emirates","AED"],["United Kingdom","GBP"],["United States","USD"],["Vietnam","VND"]
+].map(([name, local]) => ({
+  name, local, billed: BASE_CURRENCIES.has(local) ? local : "USD"
+})).sort((a,b) => a.name.localeCompare(b.name));
+
 let RATES = null;
 
 const countrySelect = document.getElementById('country-select');
 const amountInput = document.getElementById('amount-input');
 const currTag = document.getElementById('curr-tag');
-const statusText = document.getElementById('status-text');
-const statusLine = document.getElementById('status-line');
 const rateUpdated = document.getElementById('rate-updated');
 const fxDot = document.getElementById('fx-dot');
 
-DATA.forEach((c, i) => {
+COUNTRIES.forEach((c, idx) => {
   const opt = document.createElement('option');
-  opt.value = i;
-  opt.textContent = `${c.name} — billed in ${c.billed}`;
+  opt.value = idx;
+  opt.textContent = `${c.name} (${c.billed})`;
   countrySelect.appendChild(opt);
 });
-const defaultIdx = DATA.findIndex(c => c.name === "India");
-countrySelect.value = defaultIdx >= 0 ? defaultIdx : 0;
 
-function fmt(n, max=2){
-  return Number(n).toLocaleString(undefined, {maximumFractionDigits:max});
-}
+function fmt(n, d=2) { return Number(n).toLocaleString(undefined, {maximumFractionDigits:d}); }
 
-function currentCountry(){ return DATA[Number(countrySelect.value)]; }
-
-function updateCurrTag(){
-  const c = currentCountry();
+function calculate() {
+  const c = COUNTRIES[countrySelect.value];
   currTag.textContent = CURRENCY_SYMBOLS[c.billed] || c.billed;
-}
-
-/* animated count-up for the big points number */
-let lastPointsShown = 0;
-function animatePoints(target){
-  const el = document.getElementById('points-out');
-  const start = lastPointsShown;
-  const delta = target - start;
-  const dur = 500;
-  const t0 = performance.now();
-  function step(now){
-    const p = Math.min(1, (now - t0) / dur);
-    const eased = 1 - Math.pow(1 - p, 3);
-    const val = start + delta * eased;
-    el.textContent = fmt(val, 0);
-    if (p < 1) requestAnimationFrame(step);
-    else lastPointsShown = target;
-  }
-  requestAnimationFrame(step);
-
-  const tag = document.getElementById('discount-tag');
-  tag.classList.remove('pop');
-  void tag.offsetWidth;
-  tag.classList.add('pop');
-}
-
-function renderLedger(){
-  const c = currentCountry();
   const amt = parseFloat(amountInput.value) || 0;
-  const rows = document.getElementById('ledger-rows');
-  const foot = document.getElementById('ledger-foot');
 
-  if (!RATES){
-    rows.innerHTML = '';
-    document.getElementById('points-out').textContent = '—';
-    return;
-  }
+  if (!RATES) return;
 
   const rate = c.billed === "USD" ? 1 : RATES[c.billed];
-  const usd = rate ? amt / rate : null;
-  const pts = usd !== null ? usd * 100 : null;
+  const usdEquiv = rate ? amt / rate : 0;
+  const points = Math.floor(usdEquiv * 100);
 
-  let html = '';
-  const items = [
-    ['Country', c.name],
-    ['Amount spent', `${CURRENCY_SYMBOLS[c.billed]||''} ${fmt(amt)} ${c.billed}`],
-  ];
-  if (c.fallback) items.push(['Local currency', `${c.local} → billed in ${c.billed}`]);
-  items.push(['Rate today', `1 USD ≈ ${c.billed==='USD' ? '1.00' : fmt(rate,4)} ${c.billed}`]);
-  items.push(['USD equivalent', `$${usd!==null?fmt(usd):'—'}`]);
-
-  items.forEach((row) => {
-    html += `<div class="cart-row"><span>${row[0]}</span><span class="cr-v">${row[1]}</span></div>`;
-  });
-  rows.innerHTML = html;
-
-  animatePoints(pts !== null ? pts : 0);
-  foot.textContent = pts !== null && amt ? `≈ ${fmt(pts/amt*100, 2)} points per 100 ${c.billed} spent, at today's rate.` : 'Enter an amount to see your rate.';
+  document.getElementById('points-out').textContent = fmt(points, 0);
+  document.getElementById('summary-rows').innerHTML = `
+    <div class="summary-row"><span>Region</span><span>${c.name}</span></div>
+    <div class="summary-row"><span>Base Exchange Rate</span><span>1 USD = ${fmt(rate, 2)} ${c.billed}</span></div>
+    <div class="summary-row"><span>USD Equivalent</span><span>$${fmt(usdEquiv, 2)}</span></div>
+  `;
 }
 
-function renderTable(filter=''){
+function renderTable(filter = '') {
   const tbody = document.getElementById('table-body');
-  const q = filter.trim().toLowerCase();
-  let html = '';
-  let count = 0;
-  DATA.forEach(c => {
+  const q = filter.toLowerCase();
+  let html = '', count = 0;
+
+  COUNTRIES.forEach(c => {
     if (q && !c.name.toLowerCase().includes(q) && !c.billed.toLowerCase().includes(q)) return;
     count++;
-    let per100 = '—', per1 = '—';
-    if (RATES){
+    let per100 = '—';
+    if (RATES) {
       const rate = c.billed === "USD" ? 1 : RATES[c.billed];
-      if (rate){
-        per100 = fmt((100/rate)*100, 1);
-        per1 = fmt(100/rate, 3);
-      }
+      if (rate) per100 = fmt((100 / rate) * 100, 0);
     }
     html += `<tr>
-      <td class="country">${c.name}</td>
-      <td class="curr">${c.billed}${c.fallback ? `<span class="fallback-tag">via USD/EUR</span>`:''}</td>
-      <td class="num pts">${per100}</td>
-      <td class="num pts">${per1}</td>
+      <td class="c-name">${c.name}</td>
+      <td>${c.billed}</td>
+      <td class="c-pts">${per100}</td>
     </tr>`;
   });
-  tbody.innerHTML = html || `<tr><td colspan="4" style="padding:24px 16px;color:var(--text-faint);">No matches.</td></tr>`;
-  document.getElementById('table-count').textContent = `${count} / ${DATA.length} countries`;
+  tbody.innerHTML = html;
+  document.getElementById('table-count').textContent = `${count} Countries Listed`;
 }
 
-async function loadRates(){
-  statusText.textContent = 'fetching live exchange rates…';
-  statusLine.className = 'status-line';
-  try{
+async function fetchRates() {
+  try {
     const res = await fetch('https://open.er-api.com/v6/latest/USD');
     const data = await res.json();
-    if (data.result !== 'success') throw new Error('bad response');
-    RATES = data.rates;
-    const dt = data.time_last_update_utc ? new Date(data.time_last_update_utc) : new Date();
-    rateUpdated.textContent = 'FX updated ' + dt.toISOString().slice(0,10);
-    statusText.textContent = 'live rates loaded';
-    statusLine.className = 'status-line live';
-    fxDot.classList.add('live');
-  }catch(e){
-    statusText.textContent = 'live rates unavailable — showing placeholders';
-    statusLine.className = 'status-line err';
-    rateUpdated.textContent = 'FX offline';
+    if (data.result === 'success') {
+      RATES = data.rates;
+      fxDot.classList.add('live');
+      rateUpdated.textContent = 'FX Live Updated';
+      calculate();
+      renderTable();
+    }
+  } catch (e) {
+    rateUpdated.textContent = 'Offline Mode';
   }
-  renderLedger();
-  renderTable(document.getElementById('table-search').value);
 }
 
-/* small debounce helper so rapid typing doesn't force a re-render every keystroke */
-function debounce(fn, wait){
-  let t;
-  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
-}
+countrySelect.addEventListener('change', calculate);
+amountInput.addEventListener('input', calculate);
+document.getElementById('table-search').addEventListener('input', e => renderTable(e.target.value));
 
-countrySelect.addEventListener('change', () => { updateCurrTag(); renderLedger(); });
-amountInput.addEventListener('input', debounce(renderLedger, 80));
-document.getElementById('recalc-btn').addEventListener('click', renderLedger);
-document.getElementById('table-search').addEventListener('input', debounce((e) => renderTable(e.target.value), 120));
-
-updateCurrTag();
-renderTable();
-loadRates();
+fetchRates();
 </script>
 </body>
 </html>
